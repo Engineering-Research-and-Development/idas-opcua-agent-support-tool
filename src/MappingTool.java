@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -139,12 +140,18 @@ public class MappingTool {
 		// "opc.tcp://"+publicHostname+":62541/"; // :62541=DataAccess Server
 		EndpointDescription[] endpoints = myClient.discoverEndpoints(url);
 		
+		
+		final URL urlStructure = new URL("http://"+url.substring(10));
+		final String host = urlStructure.getHost();
+		
+		
 		//GAB DA CANC
-		/*for (EndpointDescription endpoint:endpoints) {
+		for (EndpointDescription endpoint:endpoints) {
 			if (endpoint.getEndpointUrl().contains("localhost")) {
-				endpoint.setEndpointUrl(endpoint.getEndpointUrl().replace("localhost","192.168.22.166"));
+				logger.debug("changing localhost with "+host);
+				endpoint.setEndpointUrl(endpoint.getEndpointUrl().replace("localhost",host));
 			}
-		}*/
+		}
 		//END GAB DA CANC
 		
 		
