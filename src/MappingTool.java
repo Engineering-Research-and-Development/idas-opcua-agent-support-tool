@@ -145,14 +145,14 @@ public class MappingTool {
 		final String host = urlStructure.getHost();
 		
 		
-		//GAB DA CANC
+		//Localhost handling 
 		for (EndpointDescription endpoint:endpoints) {
 			if (endpoint.getEndpointUrl().contains("localhost")) {
 				logger.debug("changing localhost with "+host);
 				endpoint.setEndpointUrl(endpoint.getEndpointUrl().replace("localhost",host));
 			}
 		}
-		//END GAB DA CANC
+		//END 
 		
 		
 		
@@ -397,11 +397,11 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 
 		//Iterate on datatype mapping
-		/*logger.info("##############   DATATYPE MAPPING ITERATION   ###############");
+		logger.info("##############   DATATYPE MAPPING ITERATION   ###############");
 		for (String key:propertiesUtil.getDataTypeMapping().keySet()) {
 			logger.info("["+key+"]="+propertiesUtil.getDataTypeMapping().get(key));
 
-		}*/
+		}
 
 
 		
@@ -443,7 +443,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 				Context context=new Context();
 
-
+				ContextSubscription cs=new ContextSubscription();
 				//Type type=new Type();
 				//type.getTypeDetails().setService(propertiesUtil.getFiwareService());
 				//type.getTypeDetails().setSubservice(propertiesUtil.getFiwareServicePath());
@@ -456,17 +456,21 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 					if (child.level()>1) {
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//logger.info("----) "+child.data()); // any other action goes here
-							//String objectPrefix=getPrefixByChild(mySession, child); 
-
+							String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
-							attribute.setName(child.data().getDisplayName());
-							attribute.setType(child.data().getDataType());
+							attribute.setName(objectPrefix+child.data().getDisplayName());
+							if (propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType())!=null)
+								attribute.setType(propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType()));
+							else
+								attribute.setType(child.data().getDataType());
+							
+							
 							//type.getTypeDetails().getActive().add(attribute);
 							configuration.getTypes().get(objectName).getActive().add(attribute);
 
 							Mapping mapping=new Mapping();
 							mapping.setOpcua_id(child.data().getNodeId());
-							mapping.setOcb_id(/*objectPrefix+*/child.data().getDisplayName());
+							mapping.setOcb_id(objectPrefix+child.data().getDisplayName());
 							context.getMappings().add(mapping);
 
 
@@ -475,18 +479,19 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
-							for (ContextSubscription cs:configuration.getContextSubscriptions()) {
-								if (cs.getId().equalsIgnoreCase(objectName)) {
+							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
+								if (csLoop.getId().equalsIgnoreCase(objectName)) {
 									//logger.info("found");
-									contextSubscription=cs;
+									contextSubscription=csLoop;
 									break;
 								}
 							}
 							Mapping mapping=null;
 							for (Mapping mp:contextSubscription.getMappings()) {
-								if (mp.getObject_id().equalsIgnoreCase(objectId)) {
+								if (mp.getOpcua_id().equalsIgnoreCase(child.parent().data().getNodeId())) {
 									//logger.info("found MP");
 									mapping=mp;
+									break;
 								}
 							}
 
@@ -532,27 +537,34 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						if (child.data().getType().equalsIgnoreCase("method")) {
 							//methodId=child.data().getNodeId();
 							//logger.info("--M--) "+child.data()); // any other action goes here
-							//String objectPrefix=getPrefixByChild(mySession, child); 
+							String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
-							attribute.setName(child.data().getDisplayName());
+							attribute.setName(objectPrefix+child.data().getDisplayName());
 							attribute.setType("command");
 							//type.getTypeDetails().getActive().add(attribute);
 							configuration.getTypes().get(objectName).getCommands().add(attribute);
 
-							ContextSubscription cs=new ContextSubscription();
-
+						//	ContextSubscription cs=new ContextSubscription();
+							boolean foundContextSub=false;
+							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
+								if (csLoop.getId().equalsIgnoreCase(objectName)) {
+									cs=csLoop;
+									foundContextSub=true;
+									break;
+								}
+							}
 							cs.setId(objectName);
 							cs.setType(objectName);
 
 
 							Mapping mapping=new Mapping();
-							mapping.setOcb_id(child.data().getDisplayName());
+							mapping.setOcb_id(objectPrefix+child.data().getDisplayName());
 							mapping.setObject_id(child.parent().data().getNodeId());
 							mapping.setOpcua_id(child.data().getNodeId());
 
 							cs.getMappings().add(mapping);
-
-							configuration.getContextSubscriptions().add(cs);
+							if (!foundContextSub)
+								configuration.getContextSubscriptions().add(cs);
 
 						}
 						//logger.info("child) "+child.data()); // any other action goes here
@@ -587,7 +599,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 			logger.info("**************************FINAL***************************");
 			logger.info(mapper.writeValueAsString(configuration));
 
-			try (FileWriter file = new FileWriter("config.json")) {
+			try (FileWriter file = new FileWriter("./conf/config.json")) {
 				file.write(mapper.writeValueAsString(configuration));
 				logger.info("Successfully Copied JSON Object to File...");
 			}
@@ -639,7 +651,10 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							}
 							Attribute attribute=new Attribute();
 							attribute.setName(objectPrefix+child.data().getName());
-							attribute.setType(child.data().getDataType());
+							if (propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType())!=null)
+								attribute.setType(propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType()));
+							else
+								attribute.setType(child.data().getDataType());
 							//type.getTypeDetails().getActive().add(attribute);
 							configuration.getTypes().get(objectName).getActive().add(attribute);
 
@@ -969,7 +984,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 			logger.info("**************************FINAL***************************");
 			logger.info(mapper.writeValueAsString(configuration));
 
-			try (FileWriter file = new FileWriter("config.json")) {
+			try (FileWriter file = new FileWriter("conf/config.json")) {
 				file.write(mapper.writeValueAsString(configuration));
 				logger.info("Successfully Copied JSON Object to File...");
 			}
