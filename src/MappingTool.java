@@ -1,7 +1,3 @@
-import static org.opcfoundation.ua.utils.EndpointUtil.selectByMessageSecurityMode;
-import static org.opcfoundation.ua.utils.EndpointUtil.selectByProtocol;
-import static org.opcfoundation.ua.utils.EndpointUtil.sortBySecurityLevel;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,18 +14,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.opcfoundation.ua.application.Application;
 import org.opcfoundation.ua.application.Client;
+import org.opcfoundation.ua.application.Session;
 import org.opcfoundation.ua.application.SessionChannel;
+
 import org.opcfoundation.ua.builtintypes.DataValue;
 import org.opcfoundation.ua.builtintypes.NodeId;
 
 import org.opcfoundation.ua.common.ServiceFaultException;
 import org.opcfoundation.ua.common.ServiceResultException;
+
 import org.opcfoundation.ua.core.Argument;
 import org.opcfoundation.ua.core.Attributes;
 import org.opcfoundation.ua.core.BrowseDescription;
@@ -39,13 +38,13 @@ import org.opcfoundation.ua.core.BrowseResult;
 import org.opcfoundation.ua.core.BrowseResultMask;
 import org.opcfoundation.ua.core.EndpointDescription;
 import org.opcfoundation.ua.core.Identifiers;
-import org.opcfoundation.ua.core.MessageSecurityMode;
 import org.opcfoundation.ua.core.NodeClass;
 import org.opcfoundation.ua.core.ReadRequest;
 import org.opcfoundation.ua.core.ReadResponse;
 import org.opcfoundation.ua.core.ReadValueId;
 import org.opcfoundation.ua.core.ReferenceDescription;
 import org.opcfoundation.ua.core.TimestampsToReturn;
+import org.opcfoundation.ua.transport.SecureChannel;
 import org.opcfoundation.ua.transport.ServiceChannel;
 import org.opcfoundation.ua.transport.security.Cert;
 import org.opcfoundation.ua.transport.security.KeyPair;
@@ -78,6 +77,10 @@ public class MappingTool {
 	private static final String ENDPOINT_KEY = "-e";
 	private static final String FILENAME_KEY = "-f";
 
+	private static final String USERNAME = "-u";
+	private static final String PASSWORD = "-p";
+
+	
 	private static PropertiesUtil propertiesUtil=new PropertiesUtil();
 
 	private static Map<String, String> dataTypes=new HashMap<String, String>();
@@ -86,13 +89,17 @@ public class MappingTool {
 
 
 	public static void main(String[] args) throws ServiceResultException, IOException {
-
-
 		// TODO Auto-generated method stub
 
 		try {
+		
+		
+
+		
 		String url = "";
 		String filename = "";
+		String username = "";
+		String password = "";
 
 		for(int i=0; i<args.length; i+=2)
 		{
@@ -104,6 +111,8 @@ public class MappingTool {
 			{
 				case ENDPOINT_KEY : url = value; break;
 				case FILENAME_KEY : filename = value;break;
+				case USERNAME : username = value;break;
+				case PASSWORD : password = value;break;
 
 			}
 		}
@@ -111,75 +120,82 @@ public class MappingTool {
 			logger.info("No endpoint specified.");
 			return;
 		}
+		
+		SessionChannel mySession;
+		Client myClient;
+		EndpointDescription endpoint;
+		
+		Application myClientApplication = new Application();
+	    // Load Client's Application Instance Certificate from file
+	    KeyPair myClientApplicationInstanceCertificate = null;
+
+	    // Create Client Application Instance Certificate
+	    {
+	      String certificateCommonName = "OPC UA Mapping Tool";
+	      System.out.println("Generating new Certificate for Client using CN: " + certificateCommonName);
+	      //ring applicationUri = myClientApplication.getApplicationUri();
+	      String applicationUri = myClientApplication.getApplicationUri();
+	      String organisation = "Engineering Ingegneria Informatica S.P.A.";
+	      int validityTime = 365;
+	      myClientApplicationInstanceCertificate = CertificateUtils
+	          .createApplicationInstanceCertificate(certificateCommonName, organisation, applicationUri, validityTime);
+	    }
 
 
-		///////////// CLIENT //////////////
-		// Load Client's Application Instance Certificate from file
-		//KeyPair myClientApplicationInstanceCertificate = ExampleKeys.getCert("Client");
-		// Create Client
-		// Try to load an application certificate with the specified application name.
-		// In case it is not found, a new certificate is created.
-		final KeyPair pair = getCert("Test");
+	    // Create Client
+	    myClient = new Client(myClientApplication);
+	   myClientApplication.addApplicationInstanceCertificate(myClientApplicationInstanceCertificate);
+	    //////////////////////////////////////
+
 
 		// Create the client using information provided by the created certificate
-		final Client myClient = Client.createClientApplication(pair);
 
-		//KeyPair myHttpsCertificate = ExampleKeys.getHttpsCert("Client");
-		//myClient.getApplication().getHttpsSettings().setKeyPair(myHttpsCertificate);
-		//////////////////////////////////////
-
-		////////// DISCOVER ENDPOINT /////////
-		// Discover server's endpoints, and choose one
-		//String publicHostname = InetAddress.getLocalHost().getHostName();
-		//String url = "opc.tcp://localhost:4334/UA/MyLittleServer"; // ServerExample1
-		//url="opc.tcp://opcua.demo-this.com:51210/UA/SampleServer";
-		//url="opc.tcp://commsvr.com:51234/UA/CAS_UA_Server";
-		// "https://"+publicHostname+":8443/UAExample"; // ServerExample1
-		// "opc.tcp://"+publicHostname+":51210/"; // :51210=Sample Server
-		// "https://"+publicHostname+":51212/SampleServer/"; // :51212=Sample Server
-		// "opc.tcp://"+publicHostname+":62541/"; // :62541=DataAccess Server
-		EndpointDescription[] endpoints = myClient.discoverEndpoints(url);
-		
-		
-		final URL urlStructure = new URL("http://"+url.substring(10));
+	    /////////// DISCOVER ENDPOINT ////////
+	    // Discover server's endpoints, and choose one
+	    EndpointDescription[] endpoints = myClient.discoverEndpoints(url);//51210=Sample
+	                      
+	                      
+	               
+	    //Localhost handling 
+	    final URL urlStructure = new URL("http://"+url.substring(10));
 		final String host = urlStructure.getHost();
-		
-		
-		//Localhost handling 
-		for (EndpointDescription endpoint:endpoints) {
-			if (endpoint.getEndpointUrl().contains("localhost")) {
+		for (EndpointDescription ep:endpoints) {
+			if (ep.getEndpointUrl().contains("localhost")) {
 				logger.debug("changing localhost with "+host);
-				endpoint.setEndpointUrl(endpoint.getEndpointUrl().replace("localhost",host));
+				ep.setEndpointUrl(ep.getEndpointUrl().replace("localhost",host));
 			}
-		}
-		//END 
-		
-		
-		
-		// Filter out all but opc.tcp protocol endpoints
-		if (url.startsWith("opc.tcp")) {
-			endpoints = selectByProtocol(endpoints, "opc.tcp");
-			// Filter out all but Signed & Encrypted endpoints
-			endpoints = selectByMessageSecurityMode(endpoints, MessageSecurityMode.None);
+		}                  
+	                                                                                                        // Server
+	    // Filter out all but opc.tcp protocol endpoints
+	    //endpoints = EndpointUtil.selectByProtocol(endpoints, "opc.tcp");
+	    // Filter out all but Signed & Encrypted endpoints
+	    
+	    //endpoints = EndpointUtil.selectByMessageSecurityMode(endpoints, MessageSecurityMode.SignAndEncrypt);
+	    
+	    // Filter out all but Basic128 cryption endpoints
+	    //endpoints = EndpointUtil.selectBySecurityPolicy(endpoints, SecurityPolicy.BASIC256);
+	    
+	    // Sort endpoints by security level. The lowest level at the beginning, the highest at the end
+	    // of the array
+	    //endpoints = EndpointUtil.sortBySecurityLevel(endpoints);
+	    // Choose one endpoint
+	    endpoint = endpoints[endpoints.length - 1];
 
-			// Filter out all but Basic128 cryption endpoints
-			// endpoints = selectBySecurityPolicy(endpoints, SecurityPolicy.BASIC128RSA15);
-			// Sort endpoints by security level. The lowest level at the
-			// beginning, the highest at the end of the array
-			endpoints = sortBySecurityLevel(endpoints);
-		} else {
-			endpoints = selectByProtocol(endpoints, "https");
-		}
+	    //////////////////////////////////////
 
-		// Choose one endpoint
-		EndpointDescription endpoint = endpoints[endpoints.length - 1];
-		//////////////////////////////////////
-
-		endpoint.setSecurityMode(MessageSecurityMode.None);
 		///////////// EXECUTE //////////////
-		SessionChannel mySession = myClient.createSessionChannel(endpoint);
-		// mySession.activate("username", "123");
-		mySession.activate();
+	    if(username!="" && password!="") {
+	    SecureChannel secureChannel = myClient.createSecureChannel(endpoint);
+	    
+		Session mySession2 = myClient.createSession(secureChannel);
+		mySession2.getEndpoint().setServerCertificate(endpoint.getServerCertificate());
+		mySession = mySession2.createSessionChannel(secureChannel, myClient);
+		mySession.activate(username,password);
+		}
+	    else {
+	    	mySession = myClient.createSessionChannel(endpoint);
+	    	mySession.activate();
+	    }
 		//////////////////////////////////////
 		// Browse Root
 		/*BrowseDescription browse = new BrowseDescription();
@@ -449,7 +465,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 				//type.getTypeDetails().setSubservice(propertiesUtil.getFiwareServicePath());
 				//Iterating over the tree elements using foreach
 				String objectName=null;
-				String objectId=null;
+			//	String objectId=null;
 				//String methodId=null;
 				for (TreeNode<OpcUaNode> child : node) {
 
@@ -531,7 +547,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						}
 
 						if (child.data().getType().equalsIgnoreCase("object")){
-							objectId=child.data().getNodeId();
+							//objectId=child.data().getNodeId();
 						}
 
 						if (child.data().getType().equalsIgnoreCase("method")) {
@@ -572,7 +588,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 					else {
 						//type.setName(child.data().getName());
 						objectName=child.data().getName();
-						objectId=child.data().getNodeId();
+						//objectId=child.data().getNodeId();
 						context.setId(child.data().getDisplayName());
 						context.setType(child.data().getDisplayName());
 						context.setService(propertiesUtil.getFiwareService());
@@ -1146,6 +1162,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 		}
 
 	}	
-
-	
+	/*private static byte[] toArray(int value)
+	{
+		// Little Endian
+		return new byte[] {(byte)value, (byte)(value>>8), (byte)(value>>16), (byte)(value>>24)};
+		
+		// Big-endian
+//		return new byte[] {(byte)(value>>24), (byte)(value>>16), (byte)(value>>8), (byte)(value)};
+	}*/
 }
