@@ -8,6 +8,7 @@ public class Context {
 	private String type;
 	private String service;
 	private String subservice;
+	private String polling;
 	private List<Mapping> mappings=new ArrayList<Mapping>();
 	
 	public Context() {}
@@ -18,6 +19,14 @@ public class Context {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getPolling() {
+		return polling;
+	}
+
+	public void setPolling(String polling) {
+		this.polling = polling;
 	}
 
 	public String getType() {

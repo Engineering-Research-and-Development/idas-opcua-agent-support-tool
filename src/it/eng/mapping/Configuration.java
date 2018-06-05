@@ -16,6 +16,8 @@ public class Configuration {
 	private String service;
 	private String subservice;
 	private String providerUrl;
+	private String pollingExpiration;
+	private String pollingDaemonFrequency;
 	private String deviceRegistrationDuration;
 	private String defaultType;
 	private List<Context> contexts=new ArrayList<Context>();
@@ -23,7 +25,20 @@ public class Configuration {
 	
 	public Configuration() {}
 	
+	public String getPollingExpiration() {
+		return pollingExpiration;
+	}
+	public void setPollingExpiration(String pollingExpiration) {
+		this.pollingExpiration = pollingExpiration;
+	}
 	
+	public String getPollingDaemonFrequency() {
+		return pollingDaemonFrequency;
+	}
+	public void setPollingDaemonFrequency(String pollingDaemonFrequency) {
+		this.pollingDaemonFrequency = pollingDaemonFrequency;
+	}
+		
 	public String getLogLevel() {
 		return logLevel;
 	}

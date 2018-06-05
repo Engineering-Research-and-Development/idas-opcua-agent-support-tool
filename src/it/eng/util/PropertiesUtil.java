@@ -30,6 +30,9 @@ public  class PropertiesUtil {
 	private String providerUrl;
 	private String deviceRegistrationDuration;
 	private String logLevel;
+	private String pollingExpiration;
+	private String pollingDaemonFrequency;
+	private String polling;
 
 
 
@@ -77,6 +80,9 @@ public  class PropertiesUtil {
 			fiwareServicePath=prop.getProperty("fiware-service-path");
 			providerUrl=prop.getProperty("provider-url");
 			deviceRegistrationDuration=prop.getProperty("device-registration-duration");
+			pollingExpiration=prop.getProperty("pollingExpiration");
+			pollingDaemonFrequency=prop.getProperty("pollingDaemonFrequency");
+			polling=prop.getProperty("polling");
 			
 			
 			for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements(); ) {
@@ -203,6 +209,22 @@ public  class PropertiesUtil {
 	public void setProviderUrl(String providerUrl) {
 		this.providerUrl = providerUrl;
 	}
+	
+	public String getPollingDaemonFrequency() {
+		return pollingDaemonFrequency;
+	}
+
+	public void setPollingDaemonFrequency(String pollingDaemonFrequency) {
+		this.pollingDaemonFrequency = pollingDaemonFrequency;
+	}
+	
+	public String getPollingExpiration() {
+		return pollingExpiration;
+	}
+
+	public void setPollingExpiration(String pollingExpiration) {
+		this.pollingExpiration = pollingExpiration;
+	}
 
 	public String getDeviceRegistrationDuration() {
 		return deviceRegistrationDuration;
@@ -242,5 +264,13 @@ public  class PropertiesUtil {
 
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
+	}
+	
+	public String getPolling() {
+		return polling;
+	}
+
+	public void setPolling(String polling) {
+		this.polling = polling;
 	}
 }

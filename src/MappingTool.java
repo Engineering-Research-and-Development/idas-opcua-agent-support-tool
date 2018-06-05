@@ -240,6 +240,8 @@ for (BrowseResult res:res3.getResults()) {
 		configuration.setService(propertiesUtil.getFiwareService());
 		configuration.setSubservice(propertiesUtil.getFiwareServicePath());
 		configuration.setProviderUrl(propertiesUtil.getProviderUrl());
+		configuration.setPollingDaemonFrequency(propertiesUtil.getPollingDaemonFrequency());
+		configuration.setPollingExpiration(propertiesUtil.getPollingExpiration());
 		configuration.setDeviceRegistrationDuration(propertiesUtil.getDeviceRegistrationDuration());
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -458,7 +460,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 				 */
 
 				Context context=new Context();
-
+				context.setPolling(propertiesUtil.getPolling());
 				ContextSubscription cs=new ContextSubscription();
 				//Type type=new Type();
 				//type.getTypeDetails().setService(propertiesUtil.getFiwareService());
