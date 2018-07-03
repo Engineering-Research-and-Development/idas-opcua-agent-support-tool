@@ -132,7 +132,7 @@ public class MappingTool {
 	    // Create Client Application Instance Certificate
 	    {
 	      String certificateCommonName = "OPC UA Mapping Tool";
-	      System.out.println("Generating new Certificate for Client using CN: " + certificateCommonName);
+	      //System.out.println("Generating new Certificate for Client using CN: " + certificateCommonName);
 	      //ring applicationUri = myClientApplication.getApplicationUri();
 	      String applicationUri = myClientApplication.getApplicationUri();
 	      String organisation = "Engineering Ingegneria Informatica S.P.A.";
@@ -498,7 +498,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							//logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
-								if (csLoop.getId().equalsIgnoreCase(objectName)) {
+								if (csLoop.getId().equalsIgnoreCase(propertiesUtil.getPrefix()+objectName)) {
 									//logger.info("found");
 									contextSubscription=csLoop;
 									break;
@@ -565,13 +565,13 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						//	ContextSubscription cs=new ContextSubscription();
 							boolean foundContextSub=false;
 							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
-								if (csLoop.getId().equalsIgnoreCase(objectName)) {
+								if (csLoop.getId().equalsIgnoreCase(propertiesUtil.getPrefix()+objectName)) {
 									cs=csLoop;
 									foundContextSub=true;
 									break;
 								}
 							}
-							cs.setId(objectName);
+							cs.setId(propertiesUtil.getPrefix()+objectName);
 							cs.setType(objectName);
 
 
@@ -591,7 +591,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						//type.setName(child.data().getName());
 						objectName=child.data().getName();
 						//objectId=child.data().getNodeId();
-						context.setId(child.data().getDisplayName());
+						context.setId(propertiesUtil.getPrefix()+child.data().getDisplayName());
 						context.setType(child.data().getDisplayName());
 						context.setService(propertiesUtil.getFiwareService());
 						context.setSubservice(propertiesUtil.getFiwareServicePath());
@@ -693,7 +693,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							//logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription cs:configuration.getContextSubscriptions()) {
-								if (cs.getId().equalsIgnoreCase(objectName)) {
+								if (cs.getId().equalsIgnoreCase(propertiesUtil.getPrefix()+objectName)) {
 									//logger.info("found");
 									contextSubscription=cs;
 									break;
@@ -874,10 +874,8 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 						
 							
-						context.setType(child.data().getTypeDefinition() );
-
-
-						context.setId(child.data().getName());
+						context.setType(child.data().getTypeDefinition() );		
+						context.setId(propertiesUtil.getPrefix()+child.data().getName());
 						context.setService(propertiesUtil.getFiwareService());
 						context.setSubservice(propertiesUtil.getFiwareServicePath());
 						for (TreeNode<OpcUaNode> child2 : child) {
@@ -921,7 +919,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 							ContextSubscription cs=new ContextSubscription();
 
-							cs.setId(objectName);
+							cs.setId(propertiesUtil.getPrefix()+objectName);
 							cs.setType(objectType);
 							String objectPrefix=getPrefixByChild(mySession, child); 
 

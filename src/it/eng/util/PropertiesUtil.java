@@ -32,7 +32,8 @@ public  class PropertiesUtil {
 	private String logLevel;
 	private String pollingExpiration;
 	private String pollingDaemonFrequency;
-	private String polling;
+	private Boolean polling;
+	private String prefix;
 
 
 
@@ -82,9 +83,9 @@ public  class PropertiesUtil {
 			deviceRegistrationDuration=prop.getProperty("device-registration-duration");
 			pollingExpiration=prop.getProperty("pollingExpiration");
 			pollingDaemonFrequency=prop.getProperty("pollingDaemonFrequency");
-			polling=prop.getProperty("polling");
-			
-			
+			polling=Boolean.parseBoolean(prop.getProperty("polling"));			
+			prefix=prop.getProperty("agent-id");
+						
 			for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements(); ) {
 			    String name = (String)e.nextElement();
 			    String value = prop.getProperty(name);
@@ -168,6 +169,16 @@ public  class PropertiesUtil {
 
 	public void setMongodbDb(String mongodbDb) {
 		this.mongodbDb = mongodbDb;
+	}
+	
+	
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
 	}
 
 	public int getMongodbRetries() {
@@ -266,11 +277,11 @@ public  class PropertiesUtil {
 		this.logLevel = logLevel;
 	}
 	
-	public String getPolling() {
+	public Boolean getPolling() {
 		return polling;
 	}
 
-	public void setPolling(String polling) {
+	public void setPolling(Boolean polling) {
 		this.polling = polling;
 	}
 }

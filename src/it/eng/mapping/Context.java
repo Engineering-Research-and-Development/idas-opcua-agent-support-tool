@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Context {
+	
 	private String id;
 	private String type;
 	private String service;
 	private String subservice;
-	private String polling;
+	private Boolean polling;
 	private List<Mapping> mappings=new ArrayList<Mapping>();
 	
 	public Context() {}
-
+	
 	public String getId() {
 		return id;
 	}
@@ -21,11 +22,12 @@ public class Context {
 		this.id = id;
 	}
 	
-	public String getPolling() {
+	
+	public Boolean getPolling() {
 		return polling;
 	}
 
-	public void setPolling(String polling) {
+	public void setPolling(Boolean polling) {
 		this.polling = polling;
 	}
 
