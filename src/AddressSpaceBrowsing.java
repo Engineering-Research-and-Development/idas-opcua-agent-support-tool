@@ -420,6 +420,8 @@ public class AddressSpaceBrowsing {
 			//logger.info("test="+ value);
 			String ret=dataTypes.get(value);
 			//logger.info("ret="+ret);
+			if (ret==null)
+				ret="";
 			return ret;
 		}
 		}catch (Exception e) {

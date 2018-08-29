@@ -472,11 +472,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 				for (TreeNode<OpcUaNode> child : node) {
 
 					if (child.level()>1) {
+						logger.info("--) "+child.data());
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
-							//logger.info("----) "+child.data()); // any other action goes here
+							 // any other action goes here
 							String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
-							attribute.setName(objectPrefix+child.data().getDisplayName());
+							attribute.setName(objectPrefix+child.data().getName());
 							if (propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType())!=null)
 								attribute.setType(propertiesUtil.getDataTypeMapping().get("OPC-datatype-"+child.data().getDataType()));
 							else
@@ -488,14 +489,14 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 							Mapping mapping=new Mapping();
 							mapping.setOpcua_id(child.data().getNodeId());
-							mapping.setOcb_id(objectPrefix+child.data().getDisplayName());
+							mapping.setOcb_id(objectPrefix+child.data().getName());
 							context.getMappings().add(mapping);
 
 
 						}
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
-							//logger.info("--MV--) "+child.data()); // any other action goes here
+							logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
 								if (csLoop.getId().equalsIgnoreCase(propertiesUtil.getPrefix()+objectName)) {
@@ -530,7 +531,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 									childNodeId="ns="+inputArguments[i].getDataType().getNamespaceIndex()+";"+identifier;
 									OpcUaUtil opcUaUtil=new OpcUaUtil();
-									//logger.info("test="+dataTypes.get(childNodeId));
+									logger.info("test="+dataTypes.get(childNodeId));
 									InputArgument inputArgument=new InputArgument();
 									inputArgument.setDataType(opcUaUtil.getDataTypes().get(dataTypes.get(childNodeId)));
 									inputArgument.setType(inputArguments[i].getName());
@@ -554,10 +555,10 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 						if (child.data().getType().equalsIgnoreCase("method")) {
 							//methodId=child.data().getNodeId();
-							//logger.info("--M--) "+child.data()); // any other action goes here
+							logger.info("--M--) "+child.data()); // any other action goes here
 							String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
-							attribute.setName(objectPrefix+child.data().getDisplayName());
+							attribute.setName(objectPrefix+child.data().getName());
 							attribute.setType("command");
 							//type.getTypeDetails().getActive().add(attribute);
 							configuration.getTypes().get(objectName).getCommands().add(attribute);
@@ -576,7 +577,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 
 							Mapping mapping=new Mapping();
-							mapping.setOcb_id(objectPrefix+child.data().getDisplayName());
+							mapping.setOcb_id(objectPrefix+child.data().getName());
 							mapping.setObject_id(child.parent().data().getNodeId());
 							mapping.setOpcua_id(child.data().getNodeId());
 
@@ -585,22 +586,22 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 								configuration.getContextSubscriptions().add(cs);
 
 						}
-						//logger.info("child) "+child.data()); // any other action goes here
+						logger.info("child) "+child.data()); // any other action goes here
 					}
 					else {
 						//type.setName(child.data().getName());
 						objectName=child.data().getName();
 						//objectId=child.data().getNodeId();
-						context.setId(propertiesUtil.getPrefix()+child.data().getDisplayName());
-						context.setType(child.data().getDisplayName());
+						context.setId(propertiesUtil.getPrefix()+child.data().getName());
+						context.setType(child.data().getName());
 						context.setService(propertiesUtil.getFiwareService());
 						context.setSubservice(propertiesUtil.getFiwareServicePath());
 
-						configuration.getTypes().put(child.data().getDisplayName(), new TypeDetails());
-						configuration.getTypes().get(child.data().getDisplayName()).setNodeId(child.data().getNodeId());
+						configuration.getTypes().put(child.data().getName(), new TypeDetails());
+						configuration.getTypes().get(child.data().getName()).setNodeId(child.data().getNodeId());
 
-						configuration.getTypes().get(child.data().getDisplayName()).setService(propertiesUtil.getFiwareService());
-						configuration.getTypes().get(child.data().getDisplayName()).setSubservice(propertiesUtil.getFiwareServicePath());
+						configuration.getTypes().get(child.data().getName()).setService(propertiesUtil.getFiwareService());
+						configuration.getTypes().get(child.data().getName()).setSubservice(propertiesUtil.getFiwareServicePath());
 
 
 						logger.info("-) "+child.data()); // any other action goes here
@@ -615,10 +616,10 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 
 			logger.info("**************************FINAL***************************");
-			logger.info(mapper.writeValueAsString(configuration));
+			logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
 
 			try (FileWriter file = new FileWriter("./conf/config.json")) {
-				file.write(mapper.writeValueAsString(configuration));
+				file.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
 				logger.info("Successfully Copied JSON Object to File...");
 			}
 
@@ -658,12 +659,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
-							//logger.info("-VARNOTMETH---) "+child.data()); // any other action goes here
+							logger.info("-VARNOTMETH---) "+child.data()); // any other action goes here
 							
 							String objectPrefix=getPrefixByChild(mySession, child); 
 
 							if (nodeIdsTypes.contains(objectPrefix+child.data().getName())) {
-								//logger.info("cassando Type "+objectPrefix+child.data().getName());
+								logger.info("cassando Type "+objectPrefix+child.data().getName());
 
 								continue;
 							}
@@ -690,11 +691,11 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 						
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
-							//logger.info("--MV--) "+child.data()); // any other action goes here
+							logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription cs:configuration.getContextSubscriptions()) {
 								if (cs.getId().equalsIgnoreCase(propertiesUtil.getPrefix()+objectName)) {
-									//logger.info("found");
+									logger.info("found");
 									contextSubscription=cs;
 									break;
 								}
@@ -702,7 +703,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							Mapping mapping=null;
 							for (Mapping mp:contextSubscription.getMappings()) {
 								if (mp.getObject_id().equalsIgnoreCase(objectId)) {
-									//logger.info("found MP");
+									logger.info("found MP");
 									mapping=mp;
 								}
 							}
@@ -714,7 +715,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 								Argument[] inputArguments=(Argument[]) dataValue.getValue().getValue();
 
 								for (int i=0; i<inputArguments.length; i++ ){
-									//logger.info("inputArguments["+i+"]="+inputArguments[i].getName());
+									logger.info("inputArguments["+i+"]="+inputArguments[i].getName());
 									String childNodeId=null;
 									String identifier=inputArguments[i].getDataType().toString();
 									if (identifier.contains(";")) {
@@ -724,7 +725,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 									childNodeId="ns="+inputArguments[i].getDataType().getNamespaceIndex()+";"+identifier;
 									OpcUaUtil opcUaUtil=new OpcUaUtil();
-									//logger.info("test="+dataTypes.get(childNodeId));
+									logger.info("test="+dataTypes.get(childNodeId));
 									InputArgument inputArgument=new InputArgument();
 									inputArgument.setDataType(opcUaUtil.getDataTypes().get(dataTypes.get(childNodeId)));
 									inputArgument.setType(inputArguments[i].getName());
@@ -767,12 +768,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 						if (child.data().getType().equalsIgnoreCase("method")) {
 							//methodId=child.data().getNodeId();
-							//logger.info("--M--) "+child.data()); // any other action goes here
+							logger.info("--M--) "+child.data()); // any other action goes here
 							
 							String objectPrefix=getPrefixByChild(mySession, child); 
 
 							if (nodeIdsTypes.contains(objectPrefix+child.data().getName())) {
-								//logger.info("cassando Type "+objectPrefix+child.data().getName());
+								logger.info("cassando Type "+objectPrefix+child.data().getName());
 
 								continue;
 							}
@@ -781,7 +782,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							
 							//String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
-							attribute.setName(objectPrefix+child.data().getDisplayName());
+							attribute.setName(objectPrefix+child.data().getName());
 							attribute.setType("command");
 							//type.getTypeDetails().getActive().add(attribute);
 							configuration.getTypes().get(objectName).getCommands().add(attribute);
@@ -790,7 +791,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							
 
 						}
-						//logger.info("child) "+child.data()); // any other action goes here
+						logger.info("child) "+child.data()); // any other action goes here
 					
 						
 						
@@ -825,18 +826,18 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 
 						}*/
-						//logger.info("child) "+child.data()); // any other action goes here
+						logger.info("child) "+child.data()); // any other action goes here
 					}
 					else {
 						//type.setName(child.data().getName());
-						objectName=child.data().getDisplayName();
+						objectName=child.data().getName();
 						nodeNamesTypes.add(objectName);
 
-						configuration.getTypes().put(child.data().getDisplayName(), new TypeDetails());
-						configuration.getTypes().get(child.data().getDisplayName()).setNodeId(child.data().getNodeId());
+						configuration.getTypes().put(child.data().getName(), new TypeDetails());
+						configuration.getTypes().get(child.data().getName()).setNodeId(child.data().getNodeId());
 
-						configuration.getTypes().get(child.data().getDisplayName()).setService(propertiesUtil.getFiwareService());
-						configuration.getTypes().get(child.data().getDisplayName()).setSubservice(propertiesUtil.getFiwareServicePath());
+						configuration.getTypes().get(child.data().getName()).setService(propertiesUtil.getFiwareService());
+						configuration.getTypes().get(child.data().getName()).setSubservice(propertiesUtil.getFiwareServicePath());
 
 
 						logger.info("-) "+child.data()); // any other action goes here
@@ -880,12 +881,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						context.setSubservice(propertiesUtil.getFiwareServicePath());
 						for (TreeNode<OpcUaNode> child2 : child) {
 							if (child2.data().getType().equalsIgnoreCase("variable")) {
-								//logger.info("--var) "+child2.data()); // any other action goes here
+								logger.info("--var) "+child2.data()); // any other action goes here
 
 
 								String objectPrefix=getPrefixByChild(mySession, child2); 
 								if (nodeIdsObjects.contains(objectPrefix+child2.data().getName())) {
-									//logger.info("cassando Obj "+objectPrefix+child2.data().getName());
+									logger.info("cassando Obj "+objectPrefix+child2.data().getName());
 
 									continue;
 								}
@@ -914,7 +915,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 					if (child.level()>1) {
 						if (child.data().getType().equalsIgnoreCase("method")) {
 							//methodId=child.data().getNodeId();
-							//logger.info("--M--) "+child.data()); // any other action goes here
+							logger.info("--M--) "+child.data()); // any other action goes here
 					
 
 							ContextSubscription cs=new ContextSubscription();
@@ -924,7 +925,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 							String objectPrefix=getPrefixByChild(mySession, child); 
 
 							Mapping mapping=new Mapping();
-							mapping.setOcb_id(objectPrefix+child.data().getDisplayName());
+							mapping.setOcb_id(objectPrefix+child.data().getName());
 							mapping.setObject_id(child.parent().data().getNodeId());
 							mapping.setOpcua_id(child.data().getNodeId());
 
@@ -966,7 +967,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 						}*/
 
-						//logger.info("child) "+child.data()); // any other action goes here
+						logger.info("child) "+child.data()); // any other action goes here
 					}
 					
 					if (nodeNamesTypes.contains(child.data().getTypeDefinition())) {
@@ -998,10 +999,9 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 
 			logger.info("**************************FINAL***************************");
-			logger.info(mapper.writeValueAsString(configuration));
-
+			logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
 			try (FileWriter file = new FileWriter("conf/config.json")) {
-				file.write(mapper.writeValueAsString(configuration));
+				file.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
 				logger.info("Successfully Copied JSON Object to File...");
 			}
 
@@ -1047,23 +1047,51 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 	}
 	private static String getPrefixByChild( SessionChannel session, TreeNode<OpcUaNode> child) throws ServiceFaultException, ServiceResultException {
 		// TODO Auto-generated method stub
-		
+		boolean log=false;
+		boolean isVariable=false;
+		if (child.parent()!=null) {
+			if (child.parent().data().getType().equalsIgnoreCase("Variable"))
+				isVariable=true;
+				System.out.println("GAB is Variable");
+		}
+		if (child.data()!=null) {
+			if (child.data().getName().contains("xTP")){
+				System.out.println("GAB");
+				log=true;
+			}
+		}
 		String prefix="";
+		
 		while ((child.parent()!=null)&&(child.parent().level()>1)) {
 			//Get DisplayName
 			//String name=getAttribute(session, child.data().getNodeId(),Attributes.DisplayName);
+			if (log)
+				System.out.println("1 child.parent().level()="+child.parent().level());
 			if (child.parent().data()!=null){
+				if (log)
+					System.out.println("2");
 				if (child.parent().data().getTypeDefinition()!=null) {
+					if (log)
+						System.out.println("3");
 					if (child.parent().parent()!=null){
-						if (child.parent().parent().data().getTypeDefinition()==null) {
-							child=child.parent();
-							continue;
+						if (log)
+							System.out.println("4");
+						if (isVariable==false) {
+							if (child.parent().parent().data().getTypeDefinition()==null) {
+								if (log)
+									System.out.println("5");
+								child=child.parent();
+								continue;
+							}
 						}
 					}
 
 				}
 			}
+			
 			prefix=child.parent().data().getName()+"_"+prefix;
+			if (log)
+				System.out.println("PREFIX="+prefix);
 			child=child.parent();
 		}
 		return prefix;
