@@ -30,7 +30,6 @@ import org.opcfoundation.ua.common.ServiceFaultException;
 import org.opcfoundation.ua.common.ServiceResultException;
 
 import org.opcfoundation.ua.core.Argument;
-import org.opcfoundation.ua.core.Attributes;
 import org.opcfoundation.ua.core.BrowseDescription;
 import org.opcfoundation.ua.core.BrowseDirection;
 import org.opcfoundation.ua.core.BrowseResponse;
@@ -39,13 +38,9 @@ import org.opcfoundation.ua.core.BrowseResultMask;
 import org.opcfoundation.ua.core.EndpointDescription;
 import org.opcfoundation.ua.core.Identifiers;
 import org.opcfoundation.ua.core.NodeClass;
-import org.opcfoundation.ua.core.ReadRequest;
-import org.opcfoundation.ua.core.ReadResponse;
-import org.opcfoundation.ua.core.ReadValueId;
+
 import org.opcfoundation.ua.core.ReferenceDescription;
-import org.opcfoundation.ua.core.TimestampsToReturn;
 import org.opcfoundation.ua.transport.SecureChannel;
-import org.opcfoundation.ua.transport.ServiceChannel;
 import org.opcfoundation.ua.transport.security.Cert;
 import org.opcfoundation.ua.transport.security.KeyPair;
 import org.opcfoundation.ua.transport.security.PrivKey;
@@ -217,6 +212,8 @@ for (BrowseResult res:res3.getResults()) {
 		if (propertiesUtil.analyzePropertiesFile(filename)!=0) {
 			System.exit(1);
 		}
+		
+	
 		Configuration configuration=new Configuration();
 		configuration.setLogLevel(propertiesUtil.getLogLevel());
 		ContextBroker contextBroker=new ContextBroker();
@@ -243,11 +240,59 @@ for (BrowseResult res:res3.getResults()) {
 		configuration.setPollingDaemonFrequency(propertiesUtil.getPollingDaemonFrequency());
 		configuration.setPollingExpiration(propertiesUtil.getPollingExpiration());
 		configuration.setDeviceRegistrationDuration(propertiesUtil.getDeviceRegistrationDuration());
+		
+		
+		//Nodes Filtering
+		if (propertiesUtil.getNodesFiltering()!=null) {
+			for (String nodeFiltering:propertiesUtil.getNodesFiltering().split(",")) {
+				configuration.getNodesFiltering().add(nodeFiltering);
+			}
+		}
+		
+		
 		ObjectMapper mapper = new ObjectMapper();
 
 
 		//Object to JSON in String
 		String jsonInString = mapper.writeValueAsString(configuration);
+		
+		if (propertiesUtil.getConfiguration()!=null) {
+			if (propertiesUtil.getConfiguration().equalsIgnoreCase("api")) {
+				TypeDetails typeDetails=new TypeDetails();
+				typeDetails.setActive(new ArrayList<Attribute>());
+				typeDetails.setService(propertiesUtil.getFiwareService());
+				typeDetails.setSubservice(propertiesUtil.getFiwareServicePath());
+				configuration.getTypes().put("Device", typeDetails);
+				logger.info("**************************FINAL***************************");
+				logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
+				try (FileWriter file = new FileWriter("conf/config.json")) {
+					file.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(configuration));
+					logger.info("Successfully Copied JSON Object to File...");
+					file.close();
+					///////////// SHUTDOWN /////////////
+					//Close channel
+					mySession.closeAsync();
+					//////////////////////////////////////
+					System.exit(0);
+
+					
+					}catch(Exception e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+				
+				
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		logger.info("********************************************************************");
 		logger.info(jsonInString);
 
@@ -474,6 +519,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 					if (child.level()>1) {
 						logger.info("--) "+child.data());
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
+							//Filtering
+							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							
 							 // any other action goes here
 							String objectPrefix=getPrefixByChild(mySession, child); 
 							Attribute attribute=new Attribute();
@@ -496,6 +547,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						}
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
+							//Filtering
+							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							
 							logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription csLoop:configuration.getContextSubscriptions()) {
@@ -659,6 +716,11 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
+							//Filtering
+							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
 							logger.info("-VARNOTMETH---) "+child.data()); // any other action goes here
 							
 							String objectPrefix=getPrefixByChild(mySession, child); 
@@ -691,6 +753,11 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 						
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
+							//Filtering
+							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
 							logger.info("--MV--) "+child.data()); // any other action goes here
 							ContextSubscription contextSubscription=null;
 							for (ContextSubscription cs:configuration.getContextSubscriptions()) {
@@ -745,25 +812,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 						
 						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
+		
 						
 
 						if (child.data().getType().equalsIgnoreCase("method")) {
@@ -1016,29 +1065,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 		mySession.closeAsync();
 		//////////////////////////////////////
 		System.exit(0);
-		//logger.info(res3);
 
-		//////////// TEST-STACK ////////////
-		// Create Channel
-		ServiceChannel myChannel = myClient.createServiceChannel(endpoint);
-		// Create Test Request
-		NodeId nodeId=NodeId.parseNodeId("ns=1;s=PumpSpeed");
-		ReadValueId[] nodesToRead = {new ReadValueId(nodeId, Attributes.Value, null, null)};
-		ReadRequest req = new ReadRequest(null, 0.0, TimestampsToReturn.Both, nodesToRead);
-		logger.info("REQUEST: " + req);
-
-		// Invoke service
-		ReadResponse res = mySession.Read(req);
-		// Print result
-		logger.info("RESPONSE: " + res);
-		//////////////////////////////////////
-
-
-		///////////// SHUTDOWN /////////////
-		// Close channel
-		myChannel.closeAsync();
-		//////////////////////////////////////
-		System.exit(0);
 		
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -1052,11 +1079,10 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 		if (child.parent()!=null) {
 			if (child.parent().data().getType().equalsIgnoreCase("Variable"))
 				isVariable=true;
-				System.out.println("GAB is Variable");
+				
 		}
 		if (child.data()!=null) {
 			if (child.data().getName().contains("xTP")){
-				System.out.println("GAB");
 				log=true;
 			}
 		}
@@ -1065,21 +1091,16 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 		while ((child.parent()!=null)&&(child.parent().level()>1)) {
 			//Get DisplayName
 			//String name=getAttribute(session, child.data().getNodeId(),Attributes.DisplayName);
-			if (log)
-				System.out.println("1 child.parent().level()="+child.parent().level());
+			
 			if (child.parent().data()!=null){
 				if (log)
-					System.out.println("2");
 				if (child.parent().data().getTypeDefinition()!=null) {
-					if (log)
-						System.out.println("3");
+					
 					if (child.parent().parent()!=null){
-						if (log)
-							System.out.println("4");
+						
 						if (isVariable==false) {
 							if (child.parent().parent().data().getTypeDefinition()==null) {
 								if (log)
-									System.out.println("5");
 								child=child.parent();
 								continue;
 							}
@@ -1090,8 +1111,7 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 			}
 			
 			prefix=child.parent().data().getName()+"_"+prefix;
-			if (log)
-				System.out.println("PREFIX="+prefix);
+			
 			child=child.parent();
 		}
 		return prefix;

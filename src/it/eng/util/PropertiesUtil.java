@@ -34,7 +34,8 @@ public  class PropertiesUtil {
 	private String pollingDaemonFrequency;
 	private Boolean polling;
 	private String prefix;
-
+	private String configuration;
+	private String nodesFiltering;
 
 
 	private Map<String, String> dataTypeMapping=new HashMap<String, String>();
@@ -85,7 +86,10 @@ public  class PropertiesUtil {
 			pollingDaemonFrequency=prop.getProperty("pollingDaemonFrequency");
 			polling=Boolean.parseBoolean(prop.getProperty("polling"));			
 			prefix=prop.getProperty("agent-id");
-						
+			configuration=prop.getProperty("configuration");
+			nodesFiltering=prop.getProperty("nodes-filtering");
+			
+	
 			for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements(); ) {
 			    String name = (String)e.nextElement();
 			    String value = prop.getProperty(name);
@@ -283,5 +287,21 @@ public  class PropertiesUtil {
 
 	public void setPolling(Boolean polling) {
 		this.polling = polling;
+	}
+
+	public String getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(String configuration) {
+		this.configuration = configuration;
+	}
+
+	public String getNodesFiltering() {
+		return nodesFiltering;
+	}
+
+	public void setNodesFiltering(String nodesFiltering) {
+		this.nodesFiltering = nodesFiltering;
 	}
 }
