@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Configuration {
 	private String logLevel;
 	private ContextBroker contextBroker;
@@ -22,7 +24,11 @@ public class Configuration {
 	private String defaultType;
 	private List<Context> contexts=new ArrayList<Context>();
 	private List<ContextSubscription> contextSubscriptions=new ArrayList<ContextSubscription>();
-	
+	@JsonIgnore
+	private List<String> nodesFilteringIn=new ArrayList<String>();
+	@JsonIgnore
+	private List<String> nodesFilteringOut=new ArrayList<String>();
+
 	public Configuration() {}
 	
 	public String getPollingExpiration() {
@@ -127,6 +133,23 @@ public class Configuration {
 
 	public void setTypes(Map<String, TypeDetails> types) {
 		this.types = types;
+	}
+
+
+	public List<String> getNodesFilteringIn() {
+		return nodesFilteringIn;
+	}
+
+	public void setNodesFilteringIn(List<String> nodesFilteringIn) {
+		this.nodesFilteringIn = nodesFilteringIn;
+	}
+
+	public List<String> getNodesFilteringOut() {
+		return nodesFilteringOut;
+	}
+
+	public void setNodesFilteringOut(List<String> nodesFilteringOut) {
+		this.nodesFilteringOut = nodesFilteringOut;
 	}
 
 

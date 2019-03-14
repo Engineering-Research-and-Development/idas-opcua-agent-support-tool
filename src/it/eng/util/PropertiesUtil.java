@@ -35,7 +35,8 @@ public  class PropertiesUtil {
 	private Boolean polling;
 	private String prefix;
 	private String configuration;
-	private String nodesFiltering;
+	private String nodesFilteringIn;
+	private String nodesFilteringOut;
 
 
 	private Map<String, String> dataTypeMapping=new HashMap<String, String>();
@@ -87,8 +88,9 @@ public  class PropertiesUtil {
 			polling=Boolean.parseBoolean(prop.getProperty("polling"));			
 			prefix=prop.getProperty("agent-id");
 			configuration=prop.getProperty("configuration");
-			nodesFiltering=prop.getProperty("nodes-filtering");
-			
+			nodesFilteringIn=prop.getProperty("nodes-filtering-in");
+			nodesFilteringOut=prop.getProperty("nodes-filtering-out");
+
 	
 			for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements(); ) {
 			    String name = (String)e.nextElement();
@@ -297,11 +299,21 @@ public  class PropertiesUtil {
 		this.configuration = configuration;
 	}
 
-	public String getNodesFiltering() {
-		return nodesFiltering;
+	
+
+	public String getNodesFilteringIn() {
+		return nodesFilteringIn;
 	}
 
-	public void setNodesFiltering(String nodesFiltering) {
-		this.nodesFiltering = nodesFiltering;
+	public void setNodesFilteringIn(String nodesFilteringIn) {
+		this.nodesFilteringIn = nodesFilteringIn;
+	}
+
+	public String getNodesFilteringOut() {
+		return nodesFilteringOut;
+	}
+
+	public void setNodesFilteringOut(String nodesFilteringOut) {
+		this.nodesFilteringOut = nodesFilteringOut;
 	}
 }

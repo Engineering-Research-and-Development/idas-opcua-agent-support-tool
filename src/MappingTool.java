@@ -242,10 +242,16 @@ for (BrowseResult res:res3.getResults()) {
 		configuration.setDeviceRegistrationDuration(propertiesUtil.getDeviceRegistrationDuration());
 		
 		
-		//Nodes Filtering
-		if (propertiesUtil.getNodesFiltering()!=null) {
-			for (String nodeFiltering:propertiesUtil.getNodesFiltering().split(",")) {
-				configuration.getNodesFiltering().add(nodeFiltering);
+		//Nodes Filtering IN
+		if (propertiesUtil.getNodesFilteringIn()!=null) {
+			for (String nodeFiltering:propertiesUtil.getNodesFilteringIn().split(",")) {
+				configuration.getNodesFilteringIn().add(nodeFiltering);
+			}
+		}
+		//Nodes Filtering OUT
+		if (propertiesUtil.getNodesFilteringOut()!=null) {
+			for (String nodeFiltering:propertiesUtil.getNodesFilteringOut().split(",")) {
+				configuration.getNodesFilteringOut().add(nodeFiltering);
 			}
 		}
 		
@@ -520,8 +526,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						logger.info("--) "+child.data());
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//Filtering
-							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+							if (configuration.getNodesFilteringOut().contains(child.data().getNodeId())) {
 								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							if ((configuration.getNodesFilteringIn().size()>0)&(!configuration.getNodesFilteringIn().contains(child.data().getNodeId()))) {
+								logger.info("--FILTER IN ENABLED NOT IN LIST--) "+child.data().getNodeId()); 
 								continue;
 							}
 							
@@ -548,8 +558,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//Filtering
-							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+							if (configuration.getNodesFilteringOut().contains(child.data().getNodeId())) {
 								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							if ((configuration.getNodesFilteringIn().size()>0)&(!configuration.getNodesFilteringIn().contains(child.data().getNodeId()))) {
+								logger.info("--FILTER IN ENABLED NOT IN LIST--) "+child.data().getNodeId()); 
 								continue;
 							}
 							
@@ -717,8 +731,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(!child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//Filtering
-							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+							if (configuration.getNodesFilteringOut().contains(child.data().getNodeId())) {
 								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							if ((configuration.getNodesFilteringIn().size()>0)&(!configuration.getNodesFilteringIn().contains(child.data().getNodeId()))) {
+								logger.info("--FILTER IN ENABLED NOT IN LIST--) "+child.data().getNodeId()); 
 								continue;
 							}
 							logger.info("-VARNOTMETH---) "+child.data()); // any other action goes here
@@ -754,8 +772,12 @@ for (TreeNode<OpcUaNode> node : objectTree.root()) {
 						
 						if ((child.data().getType().equalsIgnoreCase("variable"))&&(child.parent().data().getType().equalsIgnoreCase("method"))) {
 							//Filtering
-							if (configuration.getNodesFiltering().contains(child.data().getNodeId())) {
+							if (configuration.getNodesFilteringOut().contains(child.data().getNodeId())) {
 								logger.info("--FILTER OUT--) "+child.data().getNodeId()); 
+								continue;
+							}
+							if ((configuration.getNodesFilteringIn().size()>0)&(!configuration.getNodesFilteringIn().contains(child.data().getNodeId()))) {
+								logger.info("--FILTER IN ENABLED NOT IN LIST--) "+child.data().getNodeId()); 
 								continue;
 							}
 							logger.info("--MV--) "+child.data()); // any other action goes here
