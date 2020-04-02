@@ -42,6 +42,12 @@ public class Mapping {
 	public void setInputArguments(List<InputArgument> inputArguments) {
 		this.inputArguments = inputArguments;
 	}
+
+	@Override
+	public String toString() {
+		return "Mapping [ocb_id=" + ocb_id + ", opcua_id=" + opcua_id + ", object_id=" + object_id + ", inputArguments="
+				+ inputArguments + "]";
+	}
 	
 	
 }

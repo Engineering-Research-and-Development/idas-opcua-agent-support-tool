@@ -59,7 +59,10 @@ public class AddressSpaceBrowsing {
 				for (ReferenceDescription ref:res.getReferences()) 			
 				{
 					String childNodeId=ref.getNodeId().toString();//"ns="+ref.getNodeId().getNamespaceIndex()+";i="+ref.getNodeId().getValue().toString();
-					childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";"+childNodeId.split(";")[1];
+					if (childNodeId.split(";").length==1)
+						childNodeId="ns="+0+";"+childNodeId.split(";")[0];
+					else
+						childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";"+childNodeId.split(";")[1];
 					dataTypes.put(childNodeId,ref.getBrowseName().toString());
 					checkTypes(NodeId.parseNodeId(childNodeId), mySession);
 
@@ -84,7 +87,10 @@ public class AddressSpaceBrowsing {
 				for (ReferenceDescription ref:res.getReferences()) 			
 				{
 					String childNodeId=ref.getNodeId().toString();//"ns="+ref.getNodeId().getNamespaceIndex()+";i="+ref.getNodeId().getValue().toString();
-					childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";"+childNodeId.split(";")[1];
+					if (childNodeId.split(";").length==1)
+						childNodeId="ns="+0+";"+childNodeId.split(";")[0];
+					else
+						childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";"+childNodeId.split(";")[1];
 					dataTypes.put(childNodeId,ref.getBrowseName().toString());
 					checkTypes(NodeId.parseNodeId(childNodeId), mySession);
 
@@ -125,7 +131,7 @@ public class AddressSpaceBrowsing {
 					
 					//Check Namespace To Ignore
 					if (propertiesUtil.getNamespaceIgnore().contains(ref.getNodeId().getNamespaceIndex())){
-						logger.info("Found Namespace To Ignore ns="+ref.getNodeId().getNamespaceIndex());
+						logger.debug("Found Namespace To Ignore ns="+ref.getNodeId().getNamespaceIndex());
 						continue;
 					}
 					
@@ -150,18 +156,16 @@ public class AddressSpaceBrowsing {
 					
 					//Check NS
 					if (ref.getNodeId().getNamespaceUri()!=NamespaceTable.OPCUA_NAMESPACE){
-						for (int i=0; i<level; i++) {
-							for (int j=0;j<5;j++)
-								if (j%5==0)
-									System.out.print("|");
-
-								else
-									System.out.print("_");
-						}
+						/*
+						 * for (int i=0; i<level; i++) { for (int j=0;j<5;j++) if (j%5==0)
+						 * System.out.print("|");
+						 * 
+						 * else System.out.print("_"); }
+						 */
 						if (ref.getTypeDefinition().getNamespaceUri()!=NamespaceTable.OPCUA_NAMESPACE) {
 								//mySession.ge client.getAddressSpace().getNode(
 							
-							logger.info(ref.getNodeClass()+": "+ref.getBrowseName()+"("+childNodeId+")"+" --> "+ref.getTypeDefinition().toString());
+							logger.debug(ref.getNodeClass()+": "+ref.getBrowseName()+"("+childNodeId+")"+" --> "+ref.getTypeDefinition().toString());
 							/*logger.info("Browsing NodeId....");
 							String typeFolder=ref.getTypeDefinition().toString();
 							NodeId nodeIdType=NodeId.parseNodeId(typeFolder);
@@ -170,7 +174,7 @@ public class AddressSpaceBrowsing {
 							//browse(NodeId.parseNodeId(ref.getTypeDefinition().toString()), mySession, 0);
 							
 						}else
-							logger.info(ref.getNodeClass()+": "+ref.getBrowseName()+" type "+getDataType(mySession, childNodeId)+"("+childNodeId+")");
+							logger.debug(ref.getNodeClass()+": "+ref.getBrowseName()+" type "+getDataType(mySession, childNodeId)+"("+childNodeId+")");
 						
 						OpcUaNode opcUaNode=new OpcUaNode();
 						
@@ -287,7 +291,7 @@ public class AddressSpaceBrowsing {
 					
 					//Check Namespace To Ignore
 					if (propertiesUtil.getNamespaceIgnore().contains(ref.getNodeId().getNamespaceIndex())){
-						logger.info("Found Namespace To Ignore ns="+ref.getNodeId().getNamespaceIndex());
+						logger.debug("Found Namespace To Ignore ns="+ref.getNodeId().getNamespaceIndex());
 						continue;
 					}
 					//String childNodeId=ref.getNodeId().toString().substring(ref.getNodeId().toString().lastIndexOf(';')+1);
@@ -295,7 +299,12 @@ public class AddressSpaceBrowsing {
 					//logger.info("ref.getNodeId().getServerIndex()="+ref.getNodeId().getValue().toString());
 					//logger.info("ref.getNodeId().getNamespaceIndex()="+ref.getNodeId().getNamespaceIndex());
 					String childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";i="+ref.getNodeId().getValue().toString();
-					String nodeIdValue=ref.getNodeId().toString().split(";")[1];
+					
+					String nodeIdValue="";
+					if (ref.getNodeId().toString().split(";").length==1)
+						nodeIdValue=ref.getNodeId().toString().split(";")[0];
+					else
+					    nodeIdValue=ref.getNodeId().toString().split(";")[1];
 					childNodeId="ns="+ref.getNodeId().getNamespaceIndex()+";"+nodeIdValue;
 					
 					if (ref.getNodeId().getNamespaceUri()!=NamespaceTable.OPCUA_NAMESPACE) {

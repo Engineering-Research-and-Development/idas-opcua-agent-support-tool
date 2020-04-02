@@ -66,7 +66,8 @@ public  class PropertiesUtil {
 			// get the property value and print it out
 			String [] nss=prop.getProperty("namespace-ignore").split(",");
 			for (String ns:nss) {
-				namespaceIgnore.add(Integer.parseInt(ns));
+				if (!ns.isEmpty())
+					namespaceIgnore.add(Integer.parseInt(ns));
 			}
 			contextBrokerHost=prop.getProperty("context-broker-host");
 			logLevel=prop.getProperty("log-level");
@@ -104,7 +105,7 @@ public  class PropertiesUtil {
 			
 
 		} catch (Exception ex) {
-			//ex.printStackTrace();
+			ex.printStackTrace();
 			return -1;
 		} finally {
 			/*if (input != null) {
